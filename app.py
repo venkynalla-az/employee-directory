@@ -1,5 +1,9 @@
 import pyodbc
 import os
+from flask import Flask, jsonify
+from collections import OrderedDict
+
+app = Flask(__name__)
 
 
 def get_db_connection():
@@ -19,23 +23,28 @@ def get_db_connection():
     return pyodbc.connect(connection_string)
 
 
+@app.route("/employees", methods=["GET"])
 def fetch_data():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT TOP 10 * FROM employee")
+        cursor.execute("SELECT TOP 10 id, first_name, last_name, email FROM employee")
 
-        columns = [column[0] for column in cursor.description]
         rows = cursor.fetchall()
-
-        for row in rows:
-            print(dict(zip(columns, row)))
+        data = [OrderedDict([
+            ("id", row[0]),
+            ("firstName", row[1]),
+            ("lastName", row[2]),
+            ("email", row[3])
+        ]) for row in rows]
 
         cursor.close()
         conn.close()
+
+        return jsonify(data)
     except Exception as e:
-        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
-    fetch_data()
+    app.run(host="0.0.0.0", port=80, debug=True)
