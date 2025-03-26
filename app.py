@@ -3,7 +3,8 @@ import os
 from flask import Flask, jsonify
 from collections import OrderedDict
 
-from azure.identity import ClientSecretCredential
+#from azure.identity import ClientSecretCredential
+from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
 
 app = Flask(__name__)
@@ -14,7 +15,8 @@ def get_db_connection():
     tenant_id = os.getenv("AZURE_TENANT_ID")
     client_secret = os.getenv("AZURE_CLIENT_SECRET")
     key_vault_uri = os.getenv("AZURE_KEY_VAULT_URI")
-    credential = ClientSecretCredential(tenant_id, client_id, client_secret)
+    #credential = ClientSecretCredential(tenant_id, client_id, client_secret)
+    credential = ManagedIdentityCredential()
 
     secret_client = SecretClient(vault_url=key_vault_uri, credential=credential)
 
