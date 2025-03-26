@@ -46,12 +46,15 @@ def fetch_data():
         cursor.execute("SELECT TOP 10 id, first_name, last_name, email FROM employee")
 
         rows = cursor.fetchall()
-        data = [OrderedDict([
-            ("id", row[0]),
-            ("firstName", row[1]),
-            ("lastName", row[2]),
-            ("email", row[3])
-        ]) for row in rows]
+        data = [
+            {
+                "id": row[0],
+                "firstName": row[1],
+                "lastName": row[2],
+                "email": row[3]
+            }
+            for row in rows
+        ]
 
         cursor.close()
         conn.close()
