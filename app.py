@@ -1,6 +1,7 @@
 import pyodbc
 import os
 from flask import Flask, jsonify
+from flask_cors import CORS
 from collections import OrderedDict
 
 # from azure.identity import ClientSecretCredential
@@ -8,6 +9,7 @@ from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
 
 app = Flask(__name__)
+CORS(app)
 
 
 def get_db_connection():
