@@ -3,21 +3,32 @@ import os
 from flask import Flask, jsonify
 from collections import OrderedDict
 
+from azure.identity import ClientSecretCredential
+from azure.keyvault.secrets import SecretClient
+
 app = Flask(__name__)
 
 
 def get_db_connection():
-    server = os.getenv("MSSQL_DB_SERVER")
-    database = os.getenv("MSSQL_DB_NAME")
-    username = os.getenv("MSSQL_DB_USER")
-    password = os.getenv("MSSQL_DB_PASSWORD")
+    client_id = os.getenv("AZURE_CLIENT_ID")
+    tenant_id = os.getenv("AZURE_TENANT_ID")
+    client_secret = os.getenv("AZURE_CLIENT_SECRET")
+    key_vault_uri = os.getenv("AZURE_KEY_VAULT_URI")
+    credential = ClientSecretCredential(tenant_id, client_id, client_secret)
+
+    secret_client = SecretClient(vault_url=key_vault_uri, credential=credential)
+
+    server = secret_client.get_secret("MSSQL-DB-SERVER")
+    database = secret_client.get_secret("MSSQL-DB-NAME")
+    username = secret_client.get_secret("MSSQL-DB-USER")
+    password = secret_client.get_secret("MSSQL-DB-PASSWORD")
 
     connection_string = (
         f'DRIVER={{ODBC Driver 17 for SQL Server}};'
-        f'SERVER={server};'
-        f'DATABASE={database};'
-        f'UID={username};'
-        f'PWD={password};'
+        f'SERVER={server.value};'
+        f'DATABASE={database.value};'
+        f'UID={username.value};'
+        f'PWD={password.value};'
     )
 
     return pyodbc.connect(connection_string)
